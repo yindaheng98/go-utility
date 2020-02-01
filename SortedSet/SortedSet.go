@@ -1,6 +1,6 @@
 package SortedSet
 
-import "go-utility/SkipList"
+import "github.com/yindaheng98/go-utility/SkipList"
 
 //一个用跳表和hashmap实现的有序集合
 type SortedSet struct {

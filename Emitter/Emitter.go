@@ -1,7 +1,7 @@
 package Emitter
 
 import (
-	"go-utility/Single"
+	"github.com/yindaheng98/go-utility/Single"
 	"sync"
 )
 

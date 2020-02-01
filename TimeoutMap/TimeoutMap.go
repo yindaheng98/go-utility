@@ -1,7 +1,7 @@
 package TimeoutMap
 
 import (
-	"go-utility/TimeoutMap/TimeoutValue"
+	"github.com/yindaheng98/go-utility/TimeoutMap/TimeoutValue"
 	"sync"
 	"time"
 )
