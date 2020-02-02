@@ -17,7 +17,7 @@ type Emitter struct {
 }
 
 //新建触发器
-func New() *Emitter {
+func NewEmitter() *Emitter {
 	e := &Emitter{Single.NewProcessor(),
 		new([]func(interface{})), new(sync.RWMutex),
 		make(chan interface{}), new(sync.RWMutex),
