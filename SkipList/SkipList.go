@@ -48,7 +48,7 @@ func (sl *SkipList) find(data float64) []*Node {
 	//链表不为空才能开始初始化
 	level := len(sl.root.next)     //根节点索引层数即时最大索引层数
 	result := make([]*Node, level) //初始化结果index表
-	if data < sl.root.Data {       //如果链表中没有这样的节点就直接返回
+	if data < sl.root.data {       //如果链表中没有这样的节点就直接返回
 		return result
 	}
 
@@ -58,7 +58,7 @@ func (sl *SkipList) find(data float64) []*Node {
 	for pLevel > 0 { //循环直到pLevel到了第0层
 		pLevel -= 1                           //index向下走一层
 		next := p.next[pLevel]                //初始化该层的下一个节点指针
-		for next != nil && next.Data < data { //如果后面有节点并且其值比data小
+		for next != nil && next.data < data { //如果后面有节点并且其值比data小
 			p = next //就往后走一步
 			next = p.next[pLevel]
 		} //走到头了就退出，此时的p即第pLevel层要找的节点指针
@@ -74,13 +74,13 @@ func (sl *SkipList) Insert(data float64) *Node {
 	presN := uint64(len(pres)) //插入节点的数量
 
 	if pres == nil { //查找返回了空，说明链表为空
-		sl.root = NewNode(data, sl.level) //那就直接给root赋值
+		sl.root = newNode(data, sl.level) //那就直接给root赋值
 		return sl.root
 	}
 
 	//链表不为空才能开始正常赋值
 	level := sl.randLevel.Rand() + 1
-	result := NewNode(data, level) //要返回的值（永远返回新指针）
+	result := newNode(data, level) //要返回的值（永远返回新指针）
 	insert := result               //要执行插入操作的值
 
 	//返回的第一个指针就为空
@@ -137,5 +137,21 @@ func (sl *SkipList) Delete(node *Node) {
 	}
 	if node == sl.root {
 		sl.root = node.next[0]
+	}
+	sl.n--
+}
+
+//将某个元素的值加delta并返回新值
+func (sl *SkipList) Delta(node *Node, delta float64) *Node {
+	sl.Delete(node)
+	return sl.Insert(node.data + delta)
+}
+
+//将所有元素的值加delta
+func (sl *SkipList) DeltaAll(delta float64) {
+	node := sl.root
+	for i := uint64(0); i < sl.n && node != nil; i++ {
+		node.data += delta
+		node = node.next[0]
 	}
 }

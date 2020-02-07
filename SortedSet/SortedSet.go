@@ -1,6 +1,9 @@
 package SortedSet
 
-import "github.com/yindaheng98/go-utility/SkipList"
+import (
+	"fmt"
+	"github.com/yindaheng98/go-utility/SkipList"
+)
 
 //一个用跳表和hashmap实现的有序集合
 type SortedSet struct {
@@ -24,6 +27,22 @@ func (set *SortedSet) Update(obj Element, weight float64) {
 	set.whosNodeIs[nodep] = obj
 }
 
+//改变集合中一个元素的值
+func (set *SortedSet) DeltaUpdate(obj Element, delta float64) {
+	str := obj.GetName()
+	if oldnodep, ok := set.whosStringIs[str]; ok {
+		newnodep := set.skiplist.Delta(oldnodep, delta)
+		set.whosStringIs[str] = newnodep
+		delete(set.whosNodeIs, oldnodep)
+		set.whosNodeIs[newnodep] = obj
+	}
+}
+
+//集合中所有元素的值加一个delta
+func (set *SortedSet) DeltaUpdateAll(delta float64) {
+	set.skiplist.DeltaAll(delta)
+}
+
 //从集合中删除一个元素
 func (set *SortedSet) Remove(obj Element) {
 	set.remove(obj.GetName())
@@ -40,7 +59,7 @@ func (set *SortedSet) remove(str string) {
 func (set *SortedSet) GetWeight(obj Element) (float64, bool) {
 	nodep, ok := set.whosStringIs[obj.GetName()]
 	if ok {
-		return nodep.Data, true
+		return nodep.GetData(), true
 	}
 	return 0, false
 }
@@ -61,4 +80,14 @@ func (set *SortedSet) nodepsToElements(nodeps []*SkipList.Node) []Element {
 		result[i] = set.whosNodeIs[nodeps[i]]
 	}
 	return result
+}
+
+func (set *SortedSet) String() string {
+	s := ""
+	els := set.SortedAll()
+	for _, el := range els {
+		w, _ := set.GetWeight(el)
+		s += fmt.Sprintf("\t%s: %f,\n", el.GetName(), w)
+	}
+	return fmt.Sprintf("SortedSet{\n%s}", s)
 }

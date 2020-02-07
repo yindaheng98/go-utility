@@ -1,12 +1,16 @@
 package SkipList
 
 type Node struct {
-	Data float64
+	data float64
 	prev []*Node
 	next []*Node
 }
 
-func NewNode(Data float64, level uint64) *Node {
+func (n Node) GetData() float64 {
+	return n.data
+}
+
+func newNode(Data float64, level uint64) *Node {
 	if level < 1 {
 		level = 1
 	}
