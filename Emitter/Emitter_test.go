@@ -40,8 +40,8 @@ func TestEmitter(t *testing.T) {
 	time.Sleep(1e9 * 3)
 }
 
-func TestErrorEmitter(t *testing.T) {
-	emitter := NewErrorEmitter()
+func TestErrorInfoEmitter(t *testing.T) {
+	emitter := NewErrorInfoEmitter()
 	emitter.AddHandler(func(e interface{}, err error) {
 		t.Log(fmt.Sprintf("Here is a handler, I'm handling: %s, and the error is %s", e.(event).name, err.Error()))
 	})

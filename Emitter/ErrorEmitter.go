@@ -8,18 +8,12 @@ func NewErrorEmitter() *ErrorEmitter {
 	return &ErrorEmitter{NewEmitter()}
 }
 
-type element struct {
-	i interface{}
-	e error
-}
-
-func (e *ErrorEmitter) AddHandler(handler func(interface{}, error)) {
+func (e *ErrorEmitter) AddHandler(handler func(error)) {
 	e.Emitter.AddHandler(func(i interface{}) {
-		el := i.(element)
-		handler(el.i, el.e)
+		handler(i.(error))
 	})
 }
 
-func (e *ErrorEmitter) Emit(i interface{}, err error) {
-	e.Emitter.Emit(element{i, err})
+func (e *ErrorEmitter) Emit(err error) {
+	e.Emitter.Emit(err)
 }
