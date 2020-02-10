@@ -8,15 +8,17 @@ type TimeoutValue struct {
 	element Element       //值内容
 	timeout time.Duration //固定超时时间
 
-	updateChan chan time.Duration //传递更新信息
-	stopChan   chan bool          //传递停机信息
+	updateChan  chan time.Duration //传递更新信息
+	stopChan    chan bool          //传递停机信息
+	stoppedChan chan bool          //传递已停机信号
 }
 
 func New(element Element, timeout time.Duration) *TimeoutValue {
 	v := &TimeoutValue{element, timeout,
-		make(chan time.Duration, 1), make(chan bool, 1)}
+		make(chan time.Duration, 1), make(chan bool, 1), make(chan bool, 1)}
 	close(v.updateChan)
 	close(v.stopChan)
+	close(v.stoppedChan)
 	return v
 }
 
@@ -32,6 +34,7 @@ func (v *TimeoutValue) GetTimeout() time.Duration {
 func (v *TimeoutValue) Run() {
 	v.updateChan = make(chan time.Duration, 1)
 	v.stopChan = make(chan bool, 1)
+	v.stoppedChan = make(chan bool, 1)
 loop:
 	for {
 		select {
@@ -45,6 +48,8 @@ loop:
 	}
 	close(v.updateChan)
 	close(v.stopChan)
+	v.stoppedChan <- true
+	close(v.stoppedChan)
 }
 
 func (v *TimeoutValue) Update(el Element, timeout time.Duration) {
@@ -58,4 +63,5 @@ func (v *TimeoutValue) Update(el Element, timeout time.Duration) {
 func (v *TimeoutValue) Stop() {
 	defer func() { recover() }()
 	v.stopChan <- true
+	<-v.stoppedChan
 }

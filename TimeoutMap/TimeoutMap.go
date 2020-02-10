@@ -55,7 +55,7 @@ func (m *TimeoutMap) UpdateInfo(el Element, timeout time.Duration) {
 			m.mu.Lock()
 			defer m.mu.Unlock()
 			m.mumu.Unlock()
-			m.delete(id) //退出时删除
+			delete(m.elements, id) //退出时删除
 		}()
 	}
 }
@@ -70,11 +70,25 @@ func (m *TimeoutMap) Delete(id string) {
 		m.mu.RUnlock()
 		m.mu.Lock()
 		m.mumu.Unlock()
-		value.Stop() //则使其停止
-		m.delete(id) //并删除
+		value.Stop()           //则使其停止
+		delete(m.elements, id) //并删除
 		m.mu.Unlock()
 	} else {
 		m.mu.RUnlock()
+	}
+}
+
+func (m *TimeoutMap) DeleteAll() {
+	m.mumu.Lock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.mumu.Unlock()
+	for id := range m.elements {
+		if value, ok := m.elements[id]; ok {
+			value.Stop()           //则使其停止
+			delete(m.elements, id) //并删除
+		}
+		delete(m.elements, id) //并删除
 	}
 }
 
