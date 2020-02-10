@@ -6,4 +6,5 @@ type Element interface {
 	TimeoutValue.Element
 	GetID() string
 	NewAddedHandler()
+	DeletedHandler()
 }

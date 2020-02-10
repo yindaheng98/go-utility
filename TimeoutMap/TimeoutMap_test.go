@@ -22,6 +22,10 @@ func (e TestElement) TimeoutHandler() {
 	fmt.Printf("Element %s is timeout.\n", e.id)
 }
 
+func (e TestElement) DeletedHandler() {
+	fmt.Printf("Element %s is deleted.\n", e.id)
+}
+
 func TestTimeoutMap(t *testing.T) {
 	tm := New()
 	tm.UpdateInfo(TestElement{"test1"}, 1e8)
@@ -37,6 +41,8 @@ func TestTimeoutMap(t *testing.T) {
 	go tm.UpdateInfo(TestElement{"test6"}, 6e8)
 	go tm.UpdateInfo(TestElement{"test5"}, 5e8)
 	go tm.UpdateInfo(TestElement{"test6"}, 6e8)
+	time.Sleep(0.1e8)
+	//go tm.DeleteAll()
 	go tm.UpdateInfo(TestElement{"test5"}, 5e8)
 	go tm.UpdateInfo(TestElement{"test6"}, 6e8)
 	go tm.UpdateInfo(TestElement{"test5"}, 5e8)
