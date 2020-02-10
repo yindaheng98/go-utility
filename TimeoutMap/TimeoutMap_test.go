@@ -41,6 +41,8 @@ func TestTimeoutMap(t *testing.T) {
 	go tm.UpdateInfo(TestElement{"test6"}, 6e8)
 	go tm.UpdateInfo(TestElement{"test5"}, 5e8)
 	go tm.UpdateInfo(TestElement{"test6"}, 6e8)
+	time.Sleep(0.1e8)
+	go tm.UpdateInfo(TestElement{"test5"}, 1e8)
 	time.Sleep(3e8)
 	t.Log(tm.GetAll())
 	time.Sleep(2.1e8)
