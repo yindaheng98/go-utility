@@ -30,6 +30,10 @@ func NewWithC(listSize, C uint64) *SkipList {
 		NewRandomLevel(C, indexLevel, time.Now().UnixNano())}
 }
 
+func (sl *SkipList) Count() uint64 {
+	return sl.n
+}
+
 //找到各层index中大小小于data的最大节点的指针
 func (sl *SkipList) Find(data float64) *Node {
 	result := sl.find(data)

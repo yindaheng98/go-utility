@@ -18,6 +18,10 @@ func New(size uint64) *SortedSet {
 		make(map[*SkipList.Node]Element)}
 }
 
+func (set *SortedSet) Count() uint64 {
+	return set.skiplist.Count()
+}
+
 //向集合中更新一个元素
 func (set *SortedSet) Update(obj Element, weight float64) {
 	str := obj.GetName()

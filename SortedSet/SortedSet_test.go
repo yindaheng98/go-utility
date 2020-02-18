@@ -33,8 +33,11 @@ func TestSortedSet(t *testing.T) {
 		fmt.Printf("\n%s: %.6f", e.GetName(), w)
 	}
 
+	t.Log(zset.Count())
 	zset.Update(testObj{id: 100}, 10.5)
-	fmt.Print(zset.String())
+	t.Log(zset.Count())
+	fmt.Print(zset.String() + "\n")
 	zset.DeltaUpdate(testObj{id: 100}, 0.1)
-	fmt.Print(zset.String())
+	t.Log(zset.Count())
+	fmt.Print(zset.String() + "\n")
 }
