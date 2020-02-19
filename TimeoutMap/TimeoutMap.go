@@ -49,6 +49,7 @@ func (m *TimeoutMap) UpdateInfo(el Element, timeout time.Duration) {
 		m.elements[id] = value
 		m.mu.Unlock()
 		go func() {
+			value.GetElement().(Element).NewAddedHandler()
 			value.Run()
 			m.mumu.Lock()
 			m.mu.Lock()
