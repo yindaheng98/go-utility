@@ -1,5 +1,6 @@
 package TimeoutValue
 
 type Element interface {
-	TimeoutHandler()
+	UpdatedHandler()
+	TimeoutedHandler()
 }

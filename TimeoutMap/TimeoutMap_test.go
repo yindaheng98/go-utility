@@ -18,7 +18,11 @@ func (e TestElement) NewAddedHandler() {
 	fmt.Printf("Element %s was new added.\n", e.id)
 }
 
-func (e TestElement) TimeoutHandler() {
+func (e TestElement) UpdatedHandler() {
+	fmt.Printf("Element %s is updated.\n", e.id)
+}
+
+func (e TestElement) TimeoutedHandler() {
 	fmt.Printf("Element %s is timeout.\n", e.id)
 }
 

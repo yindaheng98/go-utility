@@ -40,7 +40,7 @@ loop:
 		select {
 		case v.timeout = <-v.updateChan: //正常更新是一定时间内updateChan中传入了下一次更新的时间
 		case <-time.After(v.timeout): //一定时间内updateChan中没有传入下一次更新的时间
-			v.element.TimeoutHandler()
+			v.element.TimeoutedHandler()
 			break loop //就停止检查线程
 		case <-v.stopChan: //如果传入了停止信息
 			break loop //就直接停止检查线程
@@ -58,6 +58,7 @@ func (v *TimeoutValue) Update(el Element, timeout time.Duration) {
 		v.element = el
 	}
 	v.updateChan <- timeout
+	v.element.UpdatedHandler()
 }
 
 func (v *TimeoutValue) Stop() {
