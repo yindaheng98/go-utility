@@ -128,6 +128,7 @@ func (sl *SkipList) TraversalAll() []*Node {
 }
 
 func (sl *SkipList) Delete(node *Node) {
+
 	prev := node.prev
 	next := node.next
 	length := len(prev)
@@ -139,8 +140,18 @@ func (sl *SkipList) Delete(node *Node) {
 			next[i].prev[i] = prev[i]
 		}
 	}
-	if node == sl.root {
-		sl.root = node.next[0]
+
+	if node == sl.root && sl.root.next[0] != nil {
+		//如果要删除的是个根节点，且表中不止有这一个节点，则还需要进行进一步处理
+		sl.root = node.next[0] //首先更换根节点的记录
+		length = len(sl.root.next)
+		for i := 0; i < length; i++ {
+			if next[i] == sl.root {
+				next[i] = sl.root.next[i]
+			}
+		}
+		sl.root.prev = prev
+		sl.root.next = next
 	}
 	sl.n--
 }
