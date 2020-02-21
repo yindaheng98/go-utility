@@ -147,6 +147,13 @@ func (sl *SkipList) Delete(node *Node) {
 		}
 	}
 	toDestory := node
+	defer func() {
+		length = len(toDestory.prev)
+		for i := 0; i < length; i++ {
+			toDestory.prev[i] = nil
+			toDestory.next[i] = nil
+		}
+	}()
 
 	if node == sl.root { //如果要删除的是个根节点
 		if sl.root.next[0] == nil { //而表中只有这一个节点
@@ -159,15 +166,11 @@ func (sl *SkipList) Delete(node *Node) {
 		node.next = sl.root.next //首先转移根节点的记录
 		length = len(node.next)
 		for i := 0; i < length; i++ {
-			node.next[i].prev[i] = node //然后重建根节点的后继节点的前继记录
+			if node.next[i] != nil {
+				node.next[i].prev[i] = node //然后重建根节点的后继节点的前继记录
+			}
 		}
 		sl.root = node //最后更换根节点的记录
-	}
-
-	length = len(toDestory.prev)
-	for i := 0; i < length; i++ {
-		toDestory.prev[i] = nil
-		toDestory.next[i] = nil
 	}
 }
 
