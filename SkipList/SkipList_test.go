@@ -7,14 +7,15 @@ import (
 
 func TestSkipList(t *testing.T) {
 	skiplist := NewWithLevel(30, 5)
-	t.Log(skiplist.Find(100))
-	for i := 0; i < 20; i++ {
-		t.Log(skiplist.Insert(rand.Float64() * 100))
-	}
-	for i := 0; i < 20; i++ {
-		np := skiplist.Insert(rand.Float64() * -100)
-		if np.data <= -50.0 {
+	for i := 0; i < 4; i++ {
+		np := skiplist.Insert(rand.Float64() * 100)
+		for i := 0; i < 5; i++ {
+			skiplist.Insert(rand.Float64() * -100)
+		}
+		if np.data <= 50.0 {
+			t.Log(skiplist.TraversalAll())
 			skiplist.Delete(np)
+			t.Log(skiplist.TraversalAll())
 		}
 	}
 	t.Log(skiplist.root)
@@ -34,7 +35,5 @@ func TestSkipList(t *testing.T) {
 	t.Log(skiplist.Delta(node, 10))
 	sorted = skiplist.TraversalAll()
 	t.Log(sorted)
-	for _, node := range sorted {
-		t.Log(node)
-	}
+	t.Log(skiplist.Count())
 }

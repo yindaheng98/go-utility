@@ -92,9 +92,14 @@ func (sl *SkipList) Insert(data float64) *Node {
 		insert.prev = sl.root.prev
 		insert.next = sl.root.next //首先复制根节点的前后指针
 		sl.root.prev = make([]*Node, level)
-		sl.root.next = make([]*Node, level)  //然后新建根节点的前后指针
-		insert = sl.root                     //“偷梁换柱”：把根节点值提出来作为要插入的值
-		sl.root = result                     //然后将根节点值替换为新值
+		sl.root.next = make([]*Node, level)     //然后重建根节点的前后指针
+		insert = sl.root                        //“偷梁换柱”：把根节点值提出来作为要插入的值
+		sl.root = result                        //然后将根节点值替换为新值
+		for i := uint64(0); i < sl.level; i++ { //然后更新新的根节点的后置节点的前置指针
+			if sl.root.next[i] != nil {
+				sl.root.next[i].prev[i] = sl.root
+			}
+		}
 		for i := uint64(0); i < presN; i++ { //然后更新前置节点表
 			pres[i] = sl.root
 		}
@@ -105,6 +110,9 @@ func (sl *SkipList) Insert(data float64) *Node {
 		insert.prev[i] = pres[i]
 		insert.next[i] = pres[i].next[i]
 		pres[i].next[i] = insert
+		if insert.next[i] != nil {
+			insert.next[i].prev[i] = insert
+		}
 	}
 	return result
 }
@@ -128,7 +136,7 @@ func (sl *SkipList) TraversalAll() []*Node {
 }
 
 func (sl *SkipList) Delete(node *Node) {
-
+	sl.n--
 	prev := node.prev
 	next := node.next
 	length := len(prev)
@@ -141,19 +149,19 @@ func (sl *SkipList) Delete(node *Node) {
 		}
 	}
 
-	if node == sl.root && sl.root.next[0] != nil {
-		//如果要删除的是个根节点，且表中不止有这一个节点，则还需要进行进一步处理
-		sl.root = node.next[0] //首先更换根节点的记录
-		length = len(sl.root.next)
-		for i := 0; i < length; i++ {
-			if next[i] == sl.root {
+	if node == sl.root && sl.root.next[0] != nil { //如果要删除的是个根节点
+		if sl.root.next[0] == nil { //而表中只有这一个节点
+			sl.root = nil //就直接删除根节点
+		} else { //但如果表中不止有这一个节点，则还需要进行进一步处理
+			sl.root = node.next[0] //首先更换根节点的记录
+			length = len(sl.root.next)
+			for i := 0; i < length; i++ {
 				next[i] = sl.root.next[i]
 			}
+			sl.root.prev = prev
+			sl.root.next = next
 		}
-		sl.root.prev = prev
-		sl.root.next = next
 	}
-	sl.n--
 }
 
 //将某个元素的值加delta并返回新值

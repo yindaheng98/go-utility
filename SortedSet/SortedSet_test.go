@@ -15,19 +15,22 @@ func (o testObj) GetName() string {
 }
 
 func TestSortedSet(t *testing.T) {
-	zset := New(30)
+	zset := New(10)
+	zset.Update(new(testObj), rand.Float64())
 	for i := 0; i < 20; i++ {
 		e := new(testObj)
 		e.id = rand.Int()
 		zset.Update(e, rand.Float64())
 	}
-	var sorted = zset.Sorted(16)
+	zset.Remove(new(testObj))
+	var sorted = zset.Sorted(20)
 	for _, e := range sorted {
 		w, _ := zset.GetWeight(e)
 		fmt.Printf("\n%s: %.6f", e.GetName(), w)
 	}
-	zset.DeltaUpdateAll(10)
+	zset.DeltaUpdateAll(-10)
 	sorted = zset.SortedAll()
+	t.Log(sorted)
 	for _, e := range sorted {
 		w, _ := zset.GetWeight(e)
 		fmt.Printf("\n%s: %.6f", e.GetName(), w)
