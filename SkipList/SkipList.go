@@ -137,30 +137,37 @@ func (sl *SkipList) TraversalAll() []*Node {
 
 func (sl *SkipList) Delete(node *Node) {
 	sl.n--
-	prev := node.prev
-	next := node.next
-	length := len(prev)
+	length := len(node.prev)
 	for i := 0; i < length; i++ {
-		if prev[i] != nil {
-			prev[i].next[i] = next[i]
+		if node.prev[i] != nil {
+			node.prev[i].next[i] = node.next[i]
 		}
-		if next[i] != nil {
-			next[i].prev[i] = prev[i]
+		if node.next[i] != nil {
+			node.next[i].prev[i] = node.prev[i]
 		}
 	}
+	toDestory := node
 
-	if node == sl.root && sl.root.next[0] != nil { //如果要删除的是个根节点
+	if node == sl.root { //如果要删除的是个根节点
 		if sl.root.next[0] == nil { //而表中只有这一个节点
 			sl.root = nil //就直接删除根节点
-		} else { //但如果表中不止有这一个节点，则还需要进行进一步处理
-			sl.root = node.next[0] //首先更换根节点的记录
-			length = len(sl.root.next)
-			for i := 0; i < length; i++ {
-				next[i] = sl.root.next[i]
-			}
-			sl.root.prev = prev
-			sl.root.next = next
+			return
 		}
+		//但如果表中不止有这一个节点，则还需要进行进一步处理
+		node = node.next[0]
+		node.prev = sl.root.prev
+		node.next = sl.root.next //首先转移根节点的记录
+		length = len(node.next)
+		for i := 0; i < length; i++ {
+			node.next[i].prev[i] = node //然后重建根节点的后继节点的前继记录
+		}
+		sl.root = node //最后更换根节点的记录
+	}
+
+	length = len(toDestory.prev)
+	for i := 0; i < length; i++ {
+		toDestory.prev[i] = nil
+		toDestory.next[i] = nil
 	}
 }
 

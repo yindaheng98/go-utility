@@ -35,5 +35,8 @@ func TestSkipList(t *testing.T) {
 	t.Log(skiplist.Delta(node, 10))
 	sorted = skiplist.TraversalAll()
 	t.Log(sorted)
+	for _, node := range sorted {
+		t.Log(node)
+	}
 	t.Log(skiplist.Count())
 }
