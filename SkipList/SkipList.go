@@ -137,6 +137,11 @@ func (sl *SkipList) TraversalAll() []*Node {
 
 func (sl *SkipList) Delete(node *Node) {
 	sl.n--
+	defer func(toDestory *Node) {
+		toDestory.prev = make([]*Node, len(toDestory.prev))
+		toDestory.next = make([]*Node, len(toDestory.next))
+	}(node)
+
 	length := len(node.prev)
 	for i := 0; i < length; i++ {
 		if node.prev[i] != nil {
@@ -146,14 +151,6 @@ func (sl *SkipList) Delete(node *Node) {
 			node.next[i].prev[i] = node.prev[i]
 		}
 	}
-	toDestory := node
-	defer func() {
-		length = len(toDestory.prev)
-		for i := 0; i < length; i++ {
-			toDestory.prev[i] = nil
-			toDestory.next[i] = nil
-		}
-	}()
 
 	if node == sl.root { //如果要删除的是个根节点
 		if sl.root.next[0] == nil { //而表中只有这一个节点
@@ -161,11 +158,15 @@ func (sl *SkipList) Delete(node *Node) {
 			return
 		}
 		//但如果表中不止有这一个节点，则还需要进行进一步处理
-		node = node.next[0]
-		node.prev = sl.root.prev
-		node.next = sl.root.next //首先转移根节点的记录
-		length = len(node.next)
-		for i := 0; i < length; i++ {
+		prev := sl.root.prev
+		next := sl.root.next
+		node = node.next[0] //以根节点的下一个节点为新根节点
+		for i, n := range node.next {
+			next[i] = n //首先融合根节点和新根节点的next表构造一个新的next表
+		}
+		node.prev = prev
+		node.next = next //给新根节点的前后节点表赋值
+		for i := range node.next {
 			if node.next[i] != nil {
 				node.next[i].prev[i] = node //然后重建根节点的后继节点的前继记录
 			}

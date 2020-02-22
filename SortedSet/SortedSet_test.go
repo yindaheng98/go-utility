@@ -23,10 +23,13 @@ func TestSortedSet(t *testing.T) {
 		zset.Update(e, rand.Float64())
 	}
 	zset.Remove(new(testObj))
-	var sorted = zset.Sorted(20)
+	var sorted = zset.SortedAll()
 	for _, e := range sorted {
 		w, _ := zset.GetWeight(e)
 		fmt.Printf("\n%s: %.6f", e.GetName(), w)
+		if w < 0.5 {
+			zset.Remove(e)
+		}
 	}
 	zset.DeltaUpdateAll(-10)
 	sorted = zset.SortedAll()
