@@ -1,7 +1,7 @@
 package Emitter
 
 type ErrorEmitter struct {
-	Emitter Emitter
+	Emitter
 }
 
 func NewAsyncErrorEmitter() *ErrorEmitter {
