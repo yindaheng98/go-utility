@@ -1,4 +1,4 @@
-package Emitter
+package AsyncEmitter
 
 import (
 	"github.com/yindaheng98/go-utility/Single"

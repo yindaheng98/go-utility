@@ -1,4 +1,4 @@
-package Emitter
+package AsyncEmitter
 
 import (
 	"errors"
