@@ -7,6 +7,9 @@ type ErrorInfoEmitter struct {
 func NewAsyncErrorInfoEmitter() *ErrorInfoEmitter {
 	return &ErrorInfoEmitter{NewAsyncEmitter()}
 }
+func NewSyncErrorInfoEmitter() *ErrorInfoEmitter {
+	return &ErrorInfoEmitter{NewSyncEmitter()}
+}
 
 type element struct {
 	i interface{}

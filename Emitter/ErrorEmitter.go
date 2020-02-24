@@ -6,10 +6,10 @@ type ErrorEmitter struct {
 
 func NewAsyncErrorEmitter() *ErrorEmitter {
 	return &ErrorEmitter{NewAsyncEmitter()}
-} /*
+}
 func NewSyncErrorEmitter() *ErrorEmitter {
 	return &ErrorEmitter{NewSyncEmitter()}
-}*/
+}
 
 func (e *ErrorEmitter) AddHandler(handler func(error)) {
 	e.Emitter.AddHandler(func(i interface{}) {
