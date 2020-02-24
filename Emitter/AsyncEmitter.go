@@ -1,4 +1,4 @@
-package AsyncEmitter
+package Emitter
 
 import (
 	"github.com/yindaheng98/go-utility/Single"
@@ -6,7 +6,7 @@ import (
 )
 
 //线程安全的触发器类，多线程输入事件->单线程处理事件
-type Emitter struct {
+type AsyncEmitter struct {
 	runner     *Single.Processor    //控制事件处理线程
 	handlers   *[]func(interface{}) //事件处理器列表
 	handlersMu *sync.RWMutex        //事件处理器列表读写锁
@@ -17,8 +17,8 @@ type Emitter struct {
 }
 
 //新建触发器
-func NewEmitter() *Emitter {
-	e := &Emitter{Single.NewProcessor(),
+func NewAsyncEmitter() *AsyncEmitter {
+	e := &AsyncEmitter{Single.NewProcessor(),
 		new([]func(interface{})), new(sync.RWMutex),
 		make(chan interface{}), new(sync.RWMutex),
 		false, new(sync.RWMutex)}
@@ -36,14 +36,14 @@ func NewEmitter() *Emitter {
 }
 
 //添加一个事件处理函数
-func (e *Emitter) AddHandler(handler func(interface{})) {
+func (e *AsyncEmitter) AddHandler(handler func(interface{})) {
 	e.handlersMu.Lock()
 	defer e.handlersMu.Unlock()
 	*e.handlers = append(*e.handlers, handler)
 }
 
 //触发事件
-func (e *Emitter) Emit(info interface{}) {
+func (e *AsyncEmitter) Emit(info interface{}) {
 	defer func() {
 		if recover() != nil {
 			e.Disable()
@@ -59,12 +59,12 @@ func (e *Emitter) Emit(info interface{}) {
 }
 
 //启动事件循环
-func (e *Emitter) Enable() {
+func (e *AsyncEmitter) Enable() {
 	e.runner.Start(e.eventLoop)
 }
 
 //停止事件循环
-func (e *Emitter) Disable() {
+func (e *AsyncEmitter) Disable() {
 	e.runner.Stop()
 	e.eventsMu.Lock()
 	defer e.eventsMu.Unlock()
@@ -73,7 +73,7 @@ func (e *Emitter) Disable() {
 }
 
 //事件处理循环：出队列处理事件
-func (e *Emitter) eventLoop() {
+func (e *AsyncEmitter) eventLoop() {
 	info, ok := <-e.events
 	if !ok {
 		return

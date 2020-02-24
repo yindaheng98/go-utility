@@ -1,11 +1,11 @@
-package AsyncEmitter
+package Emitter
 
 type ErrorInfoEmitter struct {
-	*Emitter
+	Emitter
 }
 
-func NewErrorInfoEmitter() *ErrorInfoEmitter {
-	return &ErrorInfoEmitter{NewEmitter()}
+func NewAsyncErrorInfoEmitter() *ErrorInfoEmitter {
+	return &ErrorInfoEmitter{NewAsyncEmitter()}
 }
 
 type element struct {

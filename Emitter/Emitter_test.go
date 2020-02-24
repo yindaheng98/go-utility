@@ -1,4 +1,4 @@
-package AsyncEmitter
+package Emitter
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ type event struct {
 }
 
 func TestEmitter(t *testing.T) {
-	emitter := NewEmitter()
+	emitter := NewAsyncEmitter()
 	emitter.AddHandler(func(e interface{}) {
 		t.Log("Here is a handler, I'm handling: " + e.(event).name)
 	})
@@ -41,7 +41,7 @@ func TestEmitter(t *testing.T) {
 }
 
 func TestErrorInfoEmitter(t *testing.T) {
-	emitter := NewErrorInfoEmitter()
+	emitter := NewAsyncErrorInfoEmitter()
 	emitter.AddHandler(func(e interface{}, err error) {
 		t.Log(fmt.Sprintf("Here is a handler, I'm handling: %s, and the error is %s", e.(event).name, err.Error()))
 	})
