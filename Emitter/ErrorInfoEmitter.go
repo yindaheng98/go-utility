@@ -1,28 +1,22 @@
 package Emitter
 
 type ErrorInfoEmitter struct {
-	Emitter
+	IndefiniteEmitter
 }
 
 func NewAsyncErrorInfoEmitter() *ErrorInfoEmitter {
-	return &ErrorInfoEmitter{NewAsyncEmitter()}
+	return &ErrorInfoEmitter{NewAsyncIndefiniteEmitter()}
 }
 func NewSyncErrorInfoEmitter() *ErrorInfoEmitter {
-	return &ErrorInfoEmitter{NewSyncEmitter()}
-}
-
-type element struct {
-	i interface{}
-	e error
+	return &ErrorInfoEmitter{NewSyncIndefiniteEmitter()}
 }
 
 func (e *ErrorInfoEmitter) AddHandler(handler func(interface{}, error)) {
-	e.Emitter.AddHandler(func(i interface{}) {
-		el := i.(element)
-		handler(el.i, el.e)
+	e.IndefiniteEmitter.AddHandler(func(args ...interface{}) {
+		handler(args[0], args[1].(error))
 	})
 }
 
 func (e *ErrorInfoEmitter) Emit(i interface{}, err error) {
-	e.Emitter.Emit(element{i, err})
+	e.IndefiniteEmitter.Emit(i, err)
 }
