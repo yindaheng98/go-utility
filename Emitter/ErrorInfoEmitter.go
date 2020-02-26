@@ -13,7 +13,11 @@ func NewSyncErrorInfoEmitter() *ErrorInfoEmitter {
 
 func (e *ErrorInfoEmitter) AddHandler(handler func(interface{}, error)) {
 	e.IndefiniteEmitter.AddHandler(func(args ...interface{}) {
-		handler(args[0], args[1].(error))
+		if args[1] == nil {
+			handler(args[0], nil)
+		} else {
+			handler(args[0], args[1].(error))
+		}
 	})
 }
 
