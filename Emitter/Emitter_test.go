@@ -44,6 +44,12 @@ func TestEmitter(t *testing.T) {
 func TestErrorInfoEmitter(t *testing.T) {
 	//emitter := NewSyncErrorInfoEmitter()
 	emitter := NewAsyncErrorInfoEmitter()
+	emitter2 := NewSyncErrorInfoEmitter()
+	emitter2.AddHandler(func(e interface{}, err error) {
+		t.Log(fmt.Sprintf("Here is emitter2, I'm handling: %s, and the error is %s", e.(event).name, err.Error()))
+	})
+	emitter2.Enable()
+	IndefiniteCascade(emitter.IndefiniteEmitter, emitter2.IndefiniteEmitter)
 	emitter.AddHandler(func(e interface{}, err error) {
 		t.Log(fmt.Sprintf("Here is a handler, I'm handling: %s, and the error is %s", e.(event).name, err.Error()))
 	})
