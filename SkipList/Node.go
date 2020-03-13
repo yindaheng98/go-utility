@@ -1,11 +1,13 @@
 package SkipList
 
+//The node consists of SkipList.
 type Node struct {
 	data float64
 	prev []*Node
 	next []*Node
 }
 
+//Get the value the node.
 func (n Node) GetData() float64 {
 	return n.data
 }

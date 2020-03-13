@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//This is the struct of skip list.
 type SkipList struct {
 	root      *Node      //根节点指针
 	n         uint64     //节点总数
@@ -12,29 +13,32 @@ type SkipList struct {
 	randLevel *RandLevel //索引层数生成器
 }
 
-//构造一个跳表
+//Returns a pointer to a SkipList.
 //
-//listSize是预计将在的跳表中存入的节点总数，indexLevel是索引的最大层数（总层数=索引层数+1）
+//"listSize" is the initial size of the SkipList.
+//"indexLevel" is the max level of the index.
 func NewWithLevel(listSize, indexLevel uint64) *SkipList {
 	C := uint64(math.Ceil(math.Pow(float64(listSize), 1.0/float64(indexLevel))))
 	return &SkipList{nil, 0, indexLevel + 1,
 		NewRandomLevel(C, indexLevel, time.Now().UnixNano())}
 }
 
-//构造一个跳表
+//Returns a pointer to a SkipList.
 //
-//listSize是预计将在的跳表中存入的节点总数，C是索引的衰减系数（下一层索引数=上一层索引数/C）
+//"listSize" is the initial size of the SkipList.
+//"C" is the decade factor of the index ([index in level n]=[index in level n-1]/C).
 func NewWithC(listSize, C uint64) *SkipList {
 	indexLevel := uint64(math.Ceil(math.Log(float64(listSize)) / math.Log(float64(C))))
 	return &SkipList{nil, 0, indexLevel + 1,
 		NewRandomLevel(C, indexLevel, time.Now().UnixNano())}
 }
 
+//Returns the number of nodes in SkipList.
 func (sl *SkipList) Count() uint64 {
 	return sl.n
 }
 
-//找到各层index中大小小于data的最大节点的指针
+//Find the pointer to max nodes whose value < data
 func (sl *SkipList) Find(data float64) *Node {
 	result := sl.find(data)
 	if result == nil || len(result) < 1 {
@@ -71,7 +75,8 @@ func (sl *SkipList) find(data float64) []*Node {
 	return result
 }
 
-//插入一个数据
+//Insert a value.
+//Returns the pointer to the node where the value is inserted.
 func (sl *SkipList) Insert(data float64) *Node {
 	sl.n++
 	pres := sl.find(data)      //查找插入点
@@ -117,7 +122,7 @@ func (sl *SkipList) Insert(data float64) *Node {
 	return result
 }
 
-//升序遍历
+//Returns list of the minimum n nodes sorted by their value in ascending order.
 func (sl *SkipList) Traversal(n uint64) []*Node {
 	if sl.n < n {
 		n = sl.n
@@ -131,10 +136,12 @@ func (sl *SkipList) Traversal(n uint64) []*Node {
 	return result
 }
 
+//Returns list of the nodes sorted by their value in ascending order.
 func (sl *SkipList) TraversalAll() []*Node {
 	return sl.Traversal(sl.n)
 }
 
+//Delete a node.
 func (sl *SkipList) Delete(node *Node) {
 	sl.n--
 	defer func(toDestory *Node) {
@@ -175,13 +182,13 @@ func (sl *SkipList) Delete(node *Node) {
 	}
 }
 
-//将某个元素的值加delta并返回新值
+//Increase the value of the node by delta, and return where the new value is inserted.
 func (sl *SkipList) Delta(node *Node, delta float64) *Node {
 	sl.Delete(node)
 	return sl.Insert(node.data + delta)
 }
 
-//将所有元素的值加delta
+//Increase the value of all nodes by delta.
 func (sl *SkipList) DeltaAll(delta float64) {
 	node := sl.root
 	for i := uint64(0); i < sl.n && node != nil; i++ {

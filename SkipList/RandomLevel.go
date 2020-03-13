@@ -5,15 +5,17 @@ import (
 	"math/rand"
 )
 
+//This is the struct for the random generation of the number of level in SkipList.
+//The detail of the algorithm:
+//	https://yindaheng98.github.io/%E6%95%B0%E5%AD%A6/SkipList.html
 type RandLevel struct {
 	logC    float64
 	min     float64
 	randSrc rand.Source
 }
 
-//新建一个随机层数生成器，算法详情参见https://yindaheng98.github.io/%E6%95%B0%E5%AD%A6/SkipList.html
-//
-//下一层的索引数量是上一层的1/C，共Level层
+//Returns a pointer to a RandLevel.
+//[index in level n]=[index in level n-1]/C, max output <= Level.
 func NewRandomLevel(C, Level uint64, seed int64) *RandLevel {
 	if C <= 1 {
 		C = 2
@@ -23,6 +25,7 @@ func NewRandomLevel(C, Level uint64, seed int64) *RandLevel {
 	return &RandLevel{math.Log(c), 1.0 / math.Pow(c, level+1), rand.NewSource(seed)}
 }
 
+//Generate a random number.
 func (rl *RandLevel) Rand() uint64 {
 	X0 := float64(0)
 	for X0 == 0 {
