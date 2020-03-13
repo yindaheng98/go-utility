@@ -6,8 +6,7 @@ import (
 )
 
 //This is the struct for the random generation of the number of level in SkipList.
-//The detail of the algorithm:
-//	https://yindaheng98.github.io/%E6%95%B0%E5%AD%A6/SkipList.html
+//The detail of the algorithm: https://yindaheng98.github.io/%E6%95%B0%E5%AD%A6/SkipList.html
 type RandLevel struct {
 	logC    float64
 	min     float64
