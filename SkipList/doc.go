@@ -17,7 +17,7 @@ Installation
 
 The only requirement is the Go Programming Language, at least version 1.13.
 
-	$ go get https://github.com/yindaheng98/go-utility
+	$ go get github.com/yindaheng98/go-utility
 
 */
 
