@@ -7,7 +7,7 @@ type Node struct {
 	next []*Node
 }
 
-//Get the value the node.
+//Get the value of the node.
 func (n Node) GetData() float64 {
 	return n.data
 }
