@@ -2,19 +2,26 @@ package Single
 
 import "sync"
 
+//Thread is the basic of package Single.
+//It can ensure that only one goroutine is running anytime.
 type Thread struct {
 	started   bool
 	startedMu *sync.Mutex
-	Callback  *callbacks
+
+	//Callback.Started() will be called when a goroutine is successfully run by method Run(routine func()).
+	//
+	//Callback.Stopped() will be called when a goroutine run by method Run(routine func()) is stopped.
+	Callback *callbacks
 }
 
+//Returns the pointer to a Thread.
 func NewThread() *Thread {
 	return &Thread{false, new(sync.Mutex), newCallbacks()}
 }
 
-//向此函数中输入的routine同一时刻只有一个会运行
-//
-//在有一个routine没有运行完成时向此函数中输入的routine会被丢弃
+//Run a goroutine.
+//Only one goroutine run by this function will run at the same time.
+//The goroutine run by this function will be discarded when there is another goroutine is not completed.
 func (s *Thread) Run(routine func()) {
 	s.startedMu.Lock()
 	if s.started { //如果已经启动过了
