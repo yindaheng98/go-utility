@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+//TimeoutValue is the timer of the element.
 type TimeoutValue struct {
 	element Element       //值内容
 	timeout time.Duration //固定超时时间
@@ -13,6 +14,7 @@ type TimeoutValue struct {
 	stoppedChan chan bool          //传递已停机信号
 }
 
+//Returns the pointer of a TimeoutValue.
 func New(element Element, timeout time.Duration) *TimeoutValue {
 	v := &TimeoutValue{element, timeout,
 		make(chan time.Duration, 1), make(chan bool, 1), make(chan bool, 1)}
@@ -30,7 +32,8 @@ func (v *TimeoutValue) GetTimeout() time.Duration {
 	return v.timeout
 }
 
-//启动检查线程
+//Start the timer. The methods will block the goroutine until the time is over.
+//When the time is over, Element.TimeoutedHandler() will be called.
 func (v *TimeoutValue) Run() {
 	v.updateChan = make(chan time.Duration, 1)
 	v.stopChan = make(chan bool, 1)
@@ -52,6 +55,7 @@ loop:
 	close(v.stoppedChan)
 }
 
+//Reset the timer.
 func (v *TimeoutValue) Update(el Element, timeout time.Duration) {
 	defer func() { recover() }()
 	if el != nil {
@@ -61,6 +65,7 @@ func (v *TimeoutValue) Update(el Element, timeout time.Duration) {
 	v.element.UpdatedHandler()
 }
 
+//Force stop timer.
 func (v *TimeoutValue) Stop() {
 	defer func() { recover() }()
 	v.stopChan <- true

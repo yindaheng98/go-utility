@@ -5,24 +5,30 @@ import (
 	"github.com/yindaheng98/go-utility/SkipList"
 )
 
-//一个用跳表和hashmap实现的有序集合
+//SortedSet sort its elements by a float number.
 type SortedSet struct {
 	skiplist     *SkipList.SkipList
 	whosStringIs map[string]*SkipList.Node  //序列化Element->*node的map
 	whosNodeIs   map[*SkipList.Node]Element //*node->*Element的map
 }
 
+//Returns a pointer to a SortedSet.
+//The input is the expected size of the SortedSet when running.
+//
+//A suitable size can improve the performance.
 func New(size uint64) *SortedSet {
 	return &SortedSet{SkipList.NewWithC(size, 2),
 		make(map[string]*SkipList.Node),
 		make(map[*SkipList.Node]Element)}
 }
 
+//Returns the number of elements in SortedSet.
 func (set *SortedSet) Count() uint64 {
 	return set.skiplist.Count()
 }
 
-//向集合中更新一个元素
+//Update or add an element in the SortedSet.
+//If the element does not exist, the element will be added.
 func (set *SortedSet) Update(obj Element, weight float64) {
 	str := obj.GetName()
 	set.remove(str)
@@ -31,7 +37,8 @@ func (set *SortedSet) Update(obj Element, weight float64) {
 	set.whosNodeIs[nodep] = obj
 }
 
-//改变集合中一个元素的值
+//Increase the weight of an element by delta.
+//If the element does not exist, nothing will happen.
 func (set *SortedSet) DeltaUpdate(obj Element, delta float64) {
 	str := obj.GetName()
 	if oldnodep, ok := set.whosStringIs[str]; ok {
@@ -42,12 +49,12 @@ func (set *SortedSet) DeltaUpdate(obj Element, delta float64) {
 	}
 }
 
-//集合中所有元素的值加一个delta
+//Increase the weight of all elements by delta.
 func (set *SortedSet) DeltaUpdateAll(delta float64) {
 	set.skiplist.DeltaAll(delta)
 }
 
-//从集合中删除一个元素
+//Delete an element
 func (set *SortedSet) Remove(obj Element) {
 	set.remove(obj.GetName())
 }
@@ -60,6 +67,7 @@ func (set *SortedSet) remove(str string) {
 	}
 }
 
+//Get the weight of an element
 func (set *SortedSet) GetWeight(obj Element) (float64, bool) {
 	nodep, ok := set.whosStringIs[obj.GetName()]
 	if ok {
@@ -68,10 +76,12 @@ func (set *SortedSet) GetWeight(obj Element) (float64, bool) {
 	return 0, false
 }
 
+//Returns list of the minimum n elements sorted by their weight in ascending order.
 func (set *SortedSet) Sorted(n uint64) []Element {
 	return set.nodepsToElements(set.skiplist.Traversal(n))
 }
 
+//Returns list of the elements sorted by their weight in ascending order.
 func (set *SortedSet) SortedAll() []Element {
 	return set.nodepsToElements(set.skiplist.TraversalAll())
 

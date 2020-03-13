@@ -6,17 +6,18 @@ import (
 	"time"
 )
 
+//TimeoutMap time each element and delete it if is not updated within a certain period of time.
 type TimeoutMap struct {
 	elements map[string]*TimeoutValue.TimeoutValue //存储数据
 	mu       *sync.RWMutex                         //数据读写锁
 }
 
-//输入超时时间和删除缓存的数量新建发送器列表
+//Returns the pointer to a TimeoutMap.
 func New() *TimeoutMap {
 	return &TimeoutMap{make(map[string]*TimeoutValue.TimeoutValue), new(sync.RWMutex)}
 }
 
-//通过id进行更新，仅更新时间
+//Reset the element's timer by its ID.
 func (m *TimeoutMap) UpdateID(id string) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -26,7 +27,7 @@ func (m *TimeoutMap) UpdateID(id string) {
 	}
 }
 
-//通过一个Element进行更新，更新存储的信息
+//Update the element and the timeout of its timer.
 func (m *TimeoutMap) UpdateInfo(el Element, timeout time.Duration) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -48,6 +49,7 @@ func (m *TimeoutMap) UpdateInfo(el Element, timeout time.Duration) {
 	}
 }
 
+//Delete an element.
 func (m *TimeoutMap) Delete(id string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -57,6 +59,7 @@ func (m *TimeoutMap) Delete(id string) {
 	}
 }
 
+//Clear the TimeoutMap.
 func (m *TimeoutMap) DeleteAll() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -65,7 +68,7 @@ func (m *TimeoutMap) DeleteAll() {
 	}
 }
 
-//获取某个id对应的信息
+//Find an element by ID.
 func (m *TimeoutMap) GetElement(id string) (Element, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -77,7 +80,7 @@ func (m *TimeoutMap) GetElement(id string) (Element, bool) {
 	return el, ok
 }
 
-//获取所有的信息
+//Returns a list of exist element.
 func (m *TimeoutMap) GetAll() []Element {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -90,6 +93,7 @@ func (m *TimeoutMap) GetAll() []Element {
 	return els
 }
 
+//Returns the number of exist elements
 func (m *TimeoutMap) Count() int {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
