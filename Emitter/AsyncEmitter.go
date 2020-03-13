@@ -5,7 +5,8 @@ import (
 	"sync"
 )
 
-//线程安全的触发器类，多线程输入事件->单线程处理事件
+//This is a implementation of Emitter.
+//This implementation will handle the events asynchronously.
 type AsyncEmitter struct {
 	runner     *Single.Processor    //控制事件处理线程
 	handlers   *[]func(interface{}) //事件处理器列表
@@ -16,7 +17,7 @@ type AsyncEmitter struct {
 	enabledMu  *sync.RWMutex        //启停标记读写锁
 }
 
-//新建触发器
+//Returns a pointer to a asynchronous Emitter.
 func NewAsyncEmitter() *AsyncEmitter {
 	e := &AsyncEmitter{Single.NewProcessor(),
 		new([]func(interface{})), new(sync.RWMutex),
@@ -35,14 +36,14 @@ func NewAsyncEmitter() *AsyncEmitter {
 	return e
 }
 
-//添加一个事件处理函数
+//Implementation of Emitter.AddHandler.
 func (e *AsyncEmitter) AddHandler(handler func(interface{})) {
 	e.handlersMu.Lock()
 	defer e.handlersMu.Unlock()
 	*e.handlers = append(*e.handlers, handler)
 }
 
-//触发事件
+//Implementation of Emitter.Emit.
 func (e *AsyncEmitter) Emit(info interface{}) {
 	defer func() {
 		if recover() != nil {
@@ -58,12 +59,12 @@ func (e *AsyncEmitter) Emit(info interface{}) {
 	}
 }
 
-//启动事件循环
+//Implementation of Emitter.Enable.
 func (e *AsyncEmitter) Enable() {
 	e.runner.Start(e.eventLoop)
 }
 
-//停止事件循环
+//Implementation of Emitter.Disable.
 func (e *AsyncEmitter) Disable() {
 	e.runner.Stop()
 	e.eventsMu.Lock()
