@@ -103,5 +103,8 @@ func (set *SortedSet) String() string {
 		w, _ := set.GetWeight(el)
 		s += fmt.Sprintf("\t%s: %f,\n", el.GetName(), w)
 	}
-	return fmt.Sprintf("SortedSet{\n%s}", s)
+	if len(s) > 2 {
+		s = s[0 : len(s)-2]
+	}
+	return fmt.Sprintf("[\n%s\n]\n", s)
 }
