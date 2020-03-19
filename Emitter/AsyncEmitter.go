@@ -21,7 +21,7 @@ type AsyncEmitter struct {
 func NewAsyncEmitter() *AsyncEmitter {
 	e := &AsyncEmitter{Single.NewProcessor(),
 		new([]func(interface{})), new(sync.RWMutex),
-		make(chan interface{}), new(sync.RWMutex),
+		make(chan interface{}, 10), new(sync.RWMutex),
 		false, new(sync.RWMutex)}
 	e.runner.Callback.Started = func() {
 		e.enabledMu.Lock()
