@@ -44,10 +44,10 @@ var jmeterCommander = TestCommander{
 			"--server",
 			"-Jserver.rmi.ssl.disable=true"}
 	},
-	nameStop: "/bin/sh",
+	nameStop: "sh",
 	argsStop: func(i uint64) []string {
 		return []string{"-c",
-			fmt.Sprintf("\"kill `ps -ef|grep %d|awk '{print $1}'`\"", 1099+i),
+			fmt.Sprintf("kill $(echo `ps -ef | grep %d | awk '{print $1}'`)", 1099+i),
 		}
 	},
 }
