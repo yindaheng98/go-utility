@@ -82,3 +82,10 @@ func (qs *QueueSet) Cancel(id string) {
 func (qs *QueueSet) Count() uint64 {
 	return qs.n
 }
+
+func (qs *QueueSet) Exists(id string) bool {
+	qs.mu.Lock()
+	defer qs.mu.Unlock()
+	_, exists := qs.loc[id]
+	return exists
+}
