@@ -1,7 +1,6 @@
 package QueueSet
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -35,8 +34,8 @@ func (qs *QueueSet) Push(e Element) {
 		default:
 		}
 	}() //每当有元素push入队列，就向通道发信息
-	fmt.Println("Pushing:", e)
-	fmt.Println("Before push:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
+	//fmt.Println("Pushing:", e)
+	//fmt.Println("Before push:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
 	if loc, exists := qs.loc[e.GetID()]; exists { //如果已存在前一个值，需要进行特殊处理
 		if loc+1 >= qs.lastloc { //如果已经是最末尾的值
 			qs.queue[loc] = e //直接改这个值就好
@@ -59,7 +58,7 @@ func (qs *QueueSet) Push(e Element) {
 	qs.queue[qs.lastloc] = e       //入队列
 	qs.loc[e.GetID()] = qs.lastloc //记录位置
 	qs.lastloc++                   //队尾指针后移一位
-	fmt.Println("After push:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
+	//fmt.Println("After push:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
 }
 
 //Pop an element.
@@ -68,8 +67,8 @@ func (qs *QueueSet) Pop() Element {
 		qs.mu.Lock()                              //Pop是原子操作
 		for i := uint64(0); i < qs.lastloc; i++ { //从开头开始遍历
 			if e := qs.queue[i]; e != nil { //找到一个非空元素
-				fmt.Println("Popping:", e)
-				fmt.Println("Before pop:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
+				//fmt.Println("Popping:", e)
+				//fmt.Println("Before pop:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
 				qs.queue[i] = nil
 				delete(qs.loc, e.GetID())
 				if len(qs.loc) <= 0 { //如果空了
@@ -84,7 +83,7 @@ func (qs *QueueSet) Pop() Element {
 						}
 					}
 				}
-				fmt.Println("After pop:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
+				//fmt.Println("After pop:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
 				qs.mu.Unlock()
 				return e //找到非空元素即返回
 			}
@@ -98,12 +97,12 @@ func (qs *QueueSet) Pop() Element {
 func (qs *QueueSet) Cancel(id string) {
 	qs.mu.Lock() //Cancel是原子操作
 	defer qs.mu.Unlock()
-	fmt.Println("Before cancel:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
+	//fmt.Println("Before cancel:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
 	if loc, exists := qs.loc[id]; exists {
 		qs.queue[loc] = nil
 		delete(qs.loc, id)
 	}
-	fmt.Println("After cancel:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
+	//fmt.Println("After cancel:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
 }
 
 //Count returns how much elements are there in the QueueSet.
