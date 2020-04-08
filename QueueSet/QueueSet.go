@@ -12,67 +12,85 @@ type Element interface {
 
 //QueueSet is the major struct of this package.
 type QueueSet struct {
-	queue chan uint64       //元素队列，此队列中的值表示元素在list中的位置
-	list  []Element         //记录QueueSet中的所有元素。如果某个元素中途取消排队，对应位置Nil
-	listp uint64            //list的队尾
-	size  uint64            //QueueSet的大小
-	loc   map[string]uint64 //记录ID对应的元素在list中的位置
-	n     uint64            //记录元素个数s
+	queue   []Element         //队列
+	loc     map[string]uint64 //记录ID对应的元素在队列中的位置
+	lastloc uint64            //队尾指针
+	pushed  chan bool         //每当有元素push入队列，就向这个通道发信息
 
-	mu      *sync.RWMutex
-	queueMu *sync.Mutex //同时只能有一个pop操作在运行
+	mu *sync.RWMutex
 }
 
 //New returns a pointer to a QueueSet.
-func New(size uint64) *QueueSet {
-	return &QueueSet{
-		queue:   make(chan uint64, size-1),
-		list:    make([]Element, size),
-		listp:   0,
-		size:    size,
-		loc:     make(map[string]uint64, size),
-		mu:      new(sync.RWMutex),
-		queueMu: new(sync.Mutex),
-	}
+func New() *QueueSet {
+	return &QueueSet{[]Element{}, map[string]uint64{}, 0, make(chan bool, 1), new(sync.RWMutex)}
 }
 
 //Push an element.
 func (qs *QueueSet) Push(e Element) {
 	qs.mu.Lock() //Push是原子操作
 	defer qs.mu.Unlock()
+	defer func() {
+		select {
+		case qs.pushed <- true:
+		default:
+		}
+	}() //每当有元素push入队列，就向通道发信息
 	fmt.Println("Pushing:", e)
-	fmt.Println("Before push:", qs.list, qs.n, qs.listp)
-	qs.queue <- qs.listp                              //入队列和之后的list修改不可被打断
-	if lastloc, exists := qs.loc[e.GetID()]; exists { //如果已存在一个
-		qs.list[lastloc] = nil //就清除前一个
-		qs.n--
+	fmt.Println("Before push:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
+	if loc, exists := qs.loc[e.GetID()]; exists { //如果已存在前一个值，需要进行特殊处理
+		if loc+1 >= qs.lastloc { //如果已经是最末尾的值
+			qs.queue[loc] = e //直接改这个值就好
+			return
+		}
+		//不是最末尾的值
+		qs.queue[loc] = nil  //那就将原来的值置空
+		if qs.lastloc <= 1 { //如果队尾指针在最开头
+			qs.lastloc = 0 //直接置0
+		} else { //否则
+			for ; qs.lastloc > 0 && qs.queue[qs.lastloc-1] == nil; qs.lastloc-- {
+				//循环直到qs.lastloc指向qs.queue中的最后一个为空的位置
+			}
+		}
 	}
-	qs.loc[e.GetID()] = qs.listp        //记录位置
-	qs.list[qs.listp] = e               //放入列表
-	qs.listp = (qs.listp + 1) % qs.size //队尾后移一位
-	qs.n++
-	fmt.Println("After push:", qs.list, qs.n, qs.listp)
+	qlength := uint64(len(qs.queue))
+	if qs.lastloc >= qlength { //队列不够长
+		qs.queue = append(qs.queue, make([]Element, qs.lastloc-qlength+10)...) //就先扩展
+	}
+	qs.queue[qs.lastloc] = e       //入队列
+	qs.loc[e.GetID()] = qs.lastloc //记录位置
+	qs.lastloc++                   //队尾指针后移一位
+	fmt.Println("After push:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
 }
 
 //Pop an element.
 func (qs *QueueSet) Pop() Element {
 	for {
-		qs.popMu.Lock()
-		loc := <-qs.queue //先出队列,对Push原子操作的结果无影响
-		fmt.Println("Popping:", loc)
-		qs.mu.Lock() //等待Push原子操作完成
-		if e := qs.list[loc]; e != nil {
-			fmt.Println("Before pop:", qs.list, qs.n)
-			delete(qs.loc, e.GetID())
-			qs.list[loc] = nil
-			qs.n--
-			qs.mu.Unlock()
-			qs.popMu.Unlock()
-			fmt.Println("After pop:", qs.list, qs.n)
-			return e
+		qs.mu.Lock()                              //Pop是原子操作
+		for i := uint64(0); i < qs.lastloc; i++ { //从开头开始遍历
+			if e := qs.queue[i]; e != nil { //找到一个非空元素
+				fmt.Println("Popping:", e)
+				fmt.Println("Before pop:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
+				qs.queue[i] = nil
+				delete(qs.loc, e.GetID())
+				if len(qs.loc) <= 0 { //如果空了
+					qs.queue = []Element{} //那就直接置空
+					qs.lastloc = 0
+				} else if i >= 10 { //如果开头的空值超过10个
+					qs.queue = qs.queue[i+1:] //就切掉开头这些空值
+					qs.lastloc -= i           //然后修改队尾指针
+					for _, ee := range qs.queue {
+						if ee != nil {
+							qs.loc[ee.GetID()] -= i //并且重载后面所有元素位置记录
+						}
+					}
+				}
+				fmt.Println("After pop:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
+				qs.mu.Unlock()
+				return e //找到非空元素即返回
+			}
 		}
 		qs.mu.Unlock()
-		qs.popMu.Unlock()
+		<-qs.pushed //找不到就等下一个push
 	}
 }
 
@@ -80,24 +98,25 @@ func (qs *QueueSet) Pop() Element {
 func (qs *QueueSet) Cancel(id string) {
 	qs.mu.Lock() //Cancel是原子操作
 	defer qs.mu.Unlock()
-	fmt.Println("Before cancel:", qs.list, qs.n)
+	fmt.Println("Before cancel:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
 	if loc, exists := qs.loc[id]; exists {
-		qs.list[loc] = nil
+		qs.queue[loc] = nil
 		delete(qs.loc, id)
-		qs.n--
 	}
-	fmt.Println("After cancel:", qs.list, qs.n)
+	fmt.Println("After cancel:", qs.lastloc, qs.queue, len(qs.queue), qs.loc, len(qs.loc))
 }
 
 //Count returns how much elements are there in the QueueSet.
 func (qs *QueueSet) Count() uint64 {
-	return qs.n
+	qs.mu.RLock()
+	defer qs.mu.RUnlock()
+	return uint64(len(qs.loc))
 }
 
 //Exists returns the existence of an element.
 func (qs *QueueSet) Exists(id string) bool {
-	qs.mu.Lock()
-	defer qs.mu.Unlock()
+	qs.mu.RLock()
+	defer qs.mu.RUnlock()
 	_, exists := qs.loc[id]
 	return exists
 }
@@ -106,15 +125,15 @@ func (qs *QueueSet) Exists(id string) bool {
 func (qs *QueueSet) GetQueueElements() []Element {
 	qs.mu.RLock()
 	defer qs.mu.RUnlock()
-	if qs.n <= 0 {
+	if len(qs.loc) <= 0 {
 		return []Element{}
 	}
-	j := qs.n
-	elements := make([]Element, qs.n)
-	for i := (qs.listp - 1) % qs.size; j > 0; i = (i - 1) % qs.size {
-		if qs.list[i] != nil {
-			elements[j-1] = qs.list[i]
-			j--
+
+	elements := make([]Element, len(qs.loc))
+	for i, j := uint64(0), uint64(0); i < qs.lastloc; i++ {
+		if qs.queue[i] != nil {
+			elements[j] = qs.queue[i]
+			j++
 		}
 	}
 	return elements

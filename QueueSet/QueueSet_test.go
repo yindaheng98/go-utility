@@ -2,6 +2,7 @@ package QueueSet
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 	"time"
 )
@@ -15,29 +16,27 @@ func (t TestElement) GetID() string {
 	return t.ID
 }
 
+var IDs = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+var count = uint(1)
+
 func TestQueueSet(t *testing.T) {
-	qs := New(5)
+	qs := New()
 	qs.Push(TestElement{ID: "A", Count: 1})
 	fmt.Println(qs.Pop())
-	go qs.Push(TestElement{ID: "B", Count: 1})
-	go qs.Push(TestElement{ID: "A", Count: 2})
-	go qs.Push(TestElement{ID: "A", Count: 3})
-	go qs.Push(TestElement{ID: "B", Count: 2})
-	go qs.Push(TestElement{ID: "C", Count: 1})
-	go qs.Push(TestElement{ID: "C", Count: 2})
-	go qs.Push(TestElement{ID: "D", Count: 1})
-	go qs.Push(TestElement{ID: "E", Count: 1})
-	go qs.Push(TestElement{ID: "F", Count: 1})
-	go qs.Push(TestElement{ID: "G", Count: 1})
+	for i := 0; i < 50; i++ {
+		ID := string(IDs[rand.Uint32()%uint32(len(IDs))])
+		go qs.Push(TestElement{ID: ID, Count: count})
+		count++
+	}
+	for i := 0; i < 50; i++ {
+		go qs.Cancel(string(IDs[rand.Uint32()%uint32(len(IDs))]))
+	}
+	for i := 0; i < 50; i++ {
+		go func() { fmt.Println(qs.Pop(), qs.GetQueueElements()) }()
+		count++
+	}
 	//go qs.Cancel("A")
 	time.Sleep(5e8)
-	go func() { fmt.Println(qs.Pop(), qs.GetQueueElements()) }()
-	go func() { fmt.Println(qs.Pop(), qs.GetQueueElements()) }()
-	go func() { fmt.Println(qs.Pop(), qs.GetQueueElements()) }()
-	go func() { fmt.Println(qs.Pop(), qs.GetQueueElements()) }()
-	go func() { fmt.Println(qs.Pop(), qs.GetQueueElements()) }()
-	go func() { fmt.Println(qs.Pop(), qs.GetQueueElements()) }()
-	go func() { fmt.Println(qs.Pop(), qs.GetQueueElements()) }()
 	time.Sleep(5e8)
 	func() { fmt.Println(qs.Pop()) }()
 	time.Sleep(5e8)
